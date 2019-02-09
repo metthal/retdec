@@ -45,7 +45,7 @@ matrix:
       - os: windows
         dist: 1803-containers
         env:
-          - CMAKE_OPTIONS="-A x64"
+          - CMAKE_OPTIONS="-G \"Visual Studio 15 2017 Win64\""
 
 install:
   # We need to install newer versions of Flex and Bison on MacOS X.
@@ -54,7 +54,8 @@ install:
       brew install flex bison
     elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
       choco install python --version 3.7.2
-      choco install activeperl winflexbison3
+      choco install openssl.light winflexbison3
+      find "/c/Program Files/OpenSSL" -type f
       export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
       export CMAKE_INCLUDE_PATH="/c/ProgramData/chocolatey/lib/winflexbison3/tools"
     fi
