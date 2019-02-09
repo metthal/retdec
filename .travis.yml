@@ -88,7 +88,7 @@ script:
   - mkdir -p build && cd build
   # We use "-O0" to speed up the build.
   # "-O0" causes segfaults in LLVM if we do not use "-DNDEBUG" as well.
-  - cmake -G"${CMAKE_GENERATOR}" -DCMAKE_CXX_FLAGS_RELEASE="-Od -DNDEBUG" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DRETDEC_TESTS=ON -DRETDEC_DEV_TOOLS=ON ..
+  - CC=clcache CXX=clcache cmake -G"${CMAKE_GENERATOR}" -DCMAKE_CXX_FLAGS_RELEASE="-Od -DNDEBUG" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DRETDEC_TESTS=ON -DRETDEC_DEV_TOOLS=ON ..
   - CC=clcache CXX=clcache cmake --build . --target llvm-project --config Release -- -m
   - clcache -s
   # Check that install is movable and that it does not need the build directory.
