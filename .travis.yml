@@ -57,6 +57,8 @@ install:
     if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       brew install flex bison
     elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
+      [ -d "/c/Python37" ] && echo "/c/Python37: YES" || echo "/c/Python37: NO"
+      [ -d "/c/Perl64" ] && echo "/c/Perl64: YES" || echo "/c/Perl64: NO"
       if [ ! -d "/c/Python37" ]; then
         choco install python --version 3.7.2
       fi
