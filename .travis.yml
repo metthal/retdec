@@ -1,6 +1,6 @@
 language: cpp
 
-cache: ccache
+#cache: ccache
 
 matrix:
   fast_finish: true
@@ -46,6 +46,10 @@ matrix:
         dist: 1803-containers
         env:
           - CMAKE_GENERATOR="Visual Studio 15 2017 Win64"
+        cache:
+          directories:
+            - /c/Perl64
+            - /c/Python37
 
 install:
   # We need to install newer versions of Flex and Bison on MacOS X.
@@ -53,12 +57,14 @@ install:
     if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       brew install flex bison
     elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
-      choco install python --version 3.7.2
-      choco install activeperl winflexbison3
-      ls -la "/c/"
-      ls -la "/c/Perl" ||  true
-      find "/c/Program Files/OpenSSL" -type f
-      export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+      if [ ! -d "/c/Python37" ]; then
+        choco install python --version 3.7.2
+      fi
+      if [ ! -d "/c/Perl64" ]; then
+        choco install activeperl
+      fi
+      choco install winflexbison3
+      export PATH="/c/Python37:/c/Python37/Scripts:/c/Perl64/bin:$PATH"
       export CMAKE_INCLUDE_PATH="/c/ProgramData/chocolatey/lib/winflexbison3/tools"
     fi
   # ccache is not installed on OS X.
@@ -79,7 +85,7 @@ script:
   - mkdir build && cd build
   # We use "-O0" to speed up the build.
   # "-O0" causes segfaults in LLVM if we do not use "-DNDEBUG" as well.
-  - cmake -G"${CMAKE_GENERATOR}" -DCMAKE_CXX_FLAGS_RELEASE="//Od //DNDEBUG" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DRETDEC_TESTS=ON -DRETDEC_DEV_TOOLS=ON ..
+  - cmake -G"${CMAKE_GENERATOR}" -DCMAKE_CXX_FLAGS_RELEASE="-Od -DNDEBUG" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DRETDEC_TESTS=ON -DRETDEC_DEV_TOOLS=ON ..
   - time cmake --build . --target install --config Release -- -m
   # Check that install is movable and that it does not need the build directory.
   - mv install ../retdec-install
