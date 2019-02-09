@@ -54,7 +54,9 @@ install:
       brew install flex bison
     elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
       choco install python --version 3.7.2
-      choco install openssl.light winflexbison3
+      choco install activeperl winflexbison3
+      ls -la "/c/"
+      ls -la "/c/Perl" ||  true
       find "/c/Program Files/OpenSSL" -type f
       export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
       export CMAKE_INCLUDE_PATH="/c/ProgramData/chocolatey/lib/winflexbison3/tools"
