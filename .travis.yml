@@ -1,10 +1,6 @@
 language: cpp
 
 #cache: ccache
-cache:
-  directories:
-    - /c/Perl64
-    - /c/Python37
 
 matrix:
   fast_finish: true
@@ -54,6 +50,7 @@ matrix:
           directories:
             - /c/Perl64
             - /c/Python37
+            - /c/Users/travis/build/metthal/retdec/build
 
 install:
   # We need to install newer versions of Flex and Bison on MacOS X.
@@ -61,15 +58,16 @@ install:
     if [ "$TRAVIS_OS_NAME" = "osx" ]; then
       brew install flex bison
     elif [ "$TRAVIS_OS_NAME" = "windows" ]; then
+      export PATH="/c/Python37:/c/Python37/Scripts:/c/Perl64/bin:$PATH"
+      export CMAKE_INCLUDE_PATH="/c/ProgramData/chocolatey/lib/winflexbison3/tools"
       if [ ! -f "/c/Python37/python.exe" ]; then
         choco install python --version 3.7.2
+        pip install clcache
       fi
       if [ ! -f "/c/Perl64/bin/perl.exe" ]; then
         choco install activeperl
       fi
       choco install winflexbison3
-      export PATH="/c/Python37:/c/Python37/Scripts:/c/Perl64/bin:$PATH"
-      export CMAKE_INCLUDE_PATH="/c/ProgramData/chocolatey/lib/winflexbison3/tools"
     fi
   # ccache is not installed on OS X.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install ccache; fi
@@ -86,19 +84,20 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="/usr/local/opt/ccache/libexec:$PATH"; fi
 
 script:
-  - mkdir build && cd build
+  - mkdir -p build && cd build
   # We use "-O0" to speed up the build.
   # "-O0" causes segfaults in LLVM if we do not use "-DNDEBUG" as well.
   - cmake -G"${CMAKE_GENERATOR}" -DCMAKE_CXX_FLAGS_RELEASE="-Od -DNDEBUG" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(pwd)/install" -DRETDEC_TESTS=ON -DRETDEC_DEV_TOOLS=ON ..
-  - time cmake --build . --target install --config Release -- -m
+  - CC=clcache CXX=clcache cmake --build . --target llvm --config Release -- -m
+  - clcache -s
   # Check that install is movable and that it does not need the build directory.
-  - mv install ../retdec-install
-  - cd ..
-  - rm -rf build
-  # Run unit tests.
-  - python3 retdec-install/bin/retdec-tests-runner.py
-  # Run the decompilation script.
-  - python3 retdec-install/bin/retdec-decompiler.py --help
+  #- mv install ../retdec-install
+  #- cd ..
+  #- rm -rf build
+  ## Run unit tests.
+  #- python3 retdec-install/bin/retdec-tests-runner.py
+  ## Run the decompilation script.
+  #- python3 retdec-install/bin/retdec-decompiler.py --help
   # Run a simple decompilation.
   #- echo -e '#include <stdio.h>\n#include <stdlib.h>\nint main()\n{\n  printf("hello world\\n");\n  return 0;\n}\n' > hello-orig.c
   #- cat hello-orig.c
